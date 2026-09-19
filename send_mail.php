@@ -38,28 +38,33 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 }
 
 
-// ─── Send data to Google Sheets ───────────────────────────────────────────────
-$googleScriptUrl = "https://script.google.com/macros/s/AKfycbzL16YOftt4cROcXEXOmhJ3RjuYkzS4drv5GHPjUG5uH3X-iq0jpg9PckMswEOZrbcW0Q/exec";
+// ─── Send data to Google Sheets (if not already logged by frontend) ────────────
+if (empty($_POST['client_logged'])) {
+    $googleScriptUrl = "https://script.google.com/macros/s/AKfycbzCm2LZnmSlWTyTt582A7gD_Nu9m3DGU6bSAnfC7o-vFjl_0iVbxwlXYUJj1BFc4mXnLg/exec";
 
-$payload = json_encode([
-    "name"     => $name,
-    "phone"    => $phone,
-    "email"    => $email,
-    "course"   => $course,
-    "city"     => $city,
-    "page_url" => $page_url
-]);
+    $payload = json_encode([
+        "name"        => $name,
+        "phone"       => $phone,
+        "email"       => $email,
+        "course"      => $course,
+        "city"        => $city,
+        "action_type" => clean($_POST['action_type'] ?? 'Enquiry / Demo'),
+        "source"      => 'Bangalore Landing Page',
+        "page_url"    => $page_url
+    ]);
 
-$ch = curl_init($googleScriptUrl);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_POST, true);
-curl_setopt($ch, CURLOPT_HTTPHEADER, [
-    'Content-Type: application/json'
-]);
-curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+    $ch = curl_init($googleScriptUrl);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Content-Type: application/json'
+    ]);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
 
-$response = curl_exec($ch);
-curl_close($ch);
+    $response = curl_exec($ch);
+    curl_close($ch);
+}
 
 
 // ─── Build the email ──────────────────────────────────────────────────────────
